@@ -11,6 +11,8 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.io.File;
 
@@ -22,6 +24,8 @@ public class EmailService {
     private String host;
     @Value("${EMAIL_USERANAME}")
     private String fromEmail;
+
+    private final TemplateEngine templateEngine; // we'll use this class when we try to connect to out html template.
 
     private final JavaMailSender emailSender;
 
@@ -60,6 +64,29 @@ public class EmailService {
             System.out.println(exp.getMessage());
             throw new RuntimeException(exp);
         }
+    }
+
+    @Async
+    public void sendHtmlMail(String firstName, String to, String token)
+    {
+        try{
+            Context context = new Context(); // we need use the thymleaf for to connect our html template which we send with email
+            context.setVariable("name",firstName);
+            context.setVariable("url",EmailUtlity.getVerificationUrl(host,token)); // we assign to variable we need to use
+            String text = templateEngine.process("emailTemplate",context); // we connect our contwxt to tamplate, with this way we can use this variables into tamplate
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true,"UTF-8");
+            helper.setPriority(1);
+            helper.setSubject("New User Account Verification");
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setText(text,true); // we change this method
+
+        }catch (Exception exp){
+            System.out.println(exp.getMessage());
+            throw new RuntimeException(exp);
+        }
+
     }
 
 
