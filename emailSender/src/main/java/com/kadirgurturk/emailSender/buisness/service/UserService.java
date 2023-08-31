@@ -30,7 +30,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        emailService.sendSimpleMailMesaage(user.getFirstName(),user.getEmail(),confirmation.getToken());
+        emailService.sendSimpleMailMessage(user.getFirstName(),user.getEmail(),confirmation.getToken());
     }
 
     public Boolean isExistToken(String token)
